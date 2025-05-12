@@ -1,6 +1,6 @@
 package app.models;
 
-enum Currencies {
+public enum Currencies {
     PLN,
     EUR,
     GBP
