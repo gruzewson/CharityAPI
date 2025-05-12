@@ -84,7 +84,7 @@ public class CollectionBoxTests {
     }
 
     @Test
-    public void isEmpty_ShouldReturnTrueWhenBoxIsEmpty() throws InvalidCurrencyOrAmountException {
+    public void isEmpty_ShouldReturnTrueWhenBoxIsEmpty() {
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
         assertTrue(box.isEmpty());
     }
@@ -105,8 +105,7 @@ public class CollectionBoxTests {
     }
 
     @Test
-    public void assignFundraisingEvent_ShouldNotAssignWhenBoxIsNotEmpty()
-            throws InvalidFundraisingEventUUIDException, InvalidEventAssignmentException, InvalidCurrencyOrAmountException {
+    public void assignFundraisingEvent_ShouldNotAssignWhenBoxIsNotEmpty() throws InvalidCurrencyOrAmountException {
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
         UUID eventId = UUID.randomUUID();
         box.putMoney(CORRECT_CURRENCY, CORRECT_AMOUNT);
@@ -123,8 +122,7 @@ public class CollectionBoxTests {
     }
 
     @Test
-    public void assignFundraisingEvent_ShouldNotAssignWhenEventIsNull()
-            throws InvalidFundraisingEventUUIDException, InvalidEventAssignmentException {
+    public void assignFundraisingEvent_ShouldNotAssignWhenEventIsNull(){
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
         assertThrows(InvalidFundraisingEventUUIDException.class, () -> box.assignFundraisingEvent(null));
     }
