@@ -8,9 +8,28 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.UUID;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "collection_boxes")
 public class CollectionBox {
+    @Id
+    @Column(columnDefinition = "UUID")
     private final UUID uuid;
+
+    @Column(name = "fundraising_event", columnDefinition = "UUID")
     private UUID FundraisingEvent;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "collection_box_money",
+            joinColumns = @JoinColumn(
+                    name            = "collection_box_id",
+                    referencedColumnName = "uuid"
+            )
+    )
+    @MapKeyColumn(name = "currency")
+    @Column(name = "amount", nullable = false)
     private final Map<String, Double> money = new Hashtable<>();
 
     public CollectionBox() {
