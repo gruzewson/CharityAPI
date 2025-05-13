@@ -2,6 +2,7 @@ package app.models;
 
 import app.exceptions.*;
 import app.services.CurrencyConverter;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.util.UUID;
 
@@ -24,16 +25,17 @@ public class FundraisingEvent {
 
     @OneToOne
     @JoinColumn(name = "collection_box_id", referencedColumnName = "uuid")
+    @JsonManagedReference
     private CollectionBox collectionBox;
-
-
-
-    public FundraisingEvent() {}
 
     public FundraisingEvent(String name, String currency) {
         this.name = name;
         this.currency = currency;
         this.accountBalance = 0.0;
+    }
+
+    public FundraisingEvent() {
+
     }
 
     public UUID getUuid() {

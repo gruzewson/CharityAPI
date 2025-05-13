@@ -8,6 +8,7 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 @Entity
@@ -18,6 +19,7 @@ public class CollectionBox {
     private UUID uuid;
 
     @OneToOne(mappedBy = "collectionBox")
+    @JsonBackReference
     private FundraisingEvent fundraisingEvent;
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -31,9 +33,8 @@ public class CollectionBox {
 
     public CollectionBox() {
         this.uuid = UUID.randomUUID();
-        for(int i = 0; i < Currencies.values().length; i++)
-        {
-            money.put(Currencies.values()[i].toString(), 0.0);
+        for (Currencies currency : Currencies.values()) {
+            money.put(currency.toString(), 0.0);
         }
     }
 

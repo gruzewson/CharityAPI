@@ -1,8 +1,6 @@
 package app.controllers;
 
 import app.exceptions.*;
-import app.factories.FundraisingEventFactory;
-import app.models.CollectionBox;
 import app.models.FinancialReportProjection;
 import app.models.FundraisingEvent;
 import app.services.FundraisingEventService;
@@ -14,18 +12,17 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/events")
 public class FundraisingEventController {
+
     private final FundraisingEventService service;
+
     public FundraisingEventController(FundraisingEventService service) {
         this.service = service;
     }
 
-    @PostMapping
-    public FundraisingEvent createFundraisingEvent() {
-        return service.createFundraisingEvent();
-    }
-
     @PostMapping("/custom-event")
-    public FundraisingEvent createFundraisingEvent(@RequestParam String name, @RequestParam String currency) {
+    public FundraisingEvent createFundraisingEvent(
+            @RequestParam("name") String name,
+            @RequestParam("currency") String currency) {
         return service.createFundraisingEvent(name, currency);
     }
 
@@ -40,15 +37,15 @@ public class FundraisingEventController {
     }
 
     @DeleteMapping
-    public void deleteFundraisingEventById(@RequestParam UUID id)
+    public void deleteFundraisingEventById(@RequestParam("id") UUID id)
             throws FundraisingEventDoesntExistException {
         service.deleteFundraisingEventById(id);
     }
 
     @PatchMapping("/{eventId}/boxes/{boxId}")
     public void assignCollectionBoxToFundraisingEvent(
-            @PathVariable UUID eventId,
-            @PathVariable UUID boxId)
+            @PathVariable("eventId") UUID eventId,
+            @PathVariable("boxId") UUID boxId)
             throws FundraisingEventDoesntExistException, CollectionBoxDoesntExistException,
             InvalidCollectionBoxException, InvalidEventAssignmentException, InvalidFundraisingEventUUIDException, CollectionBoxAlreadyAssignedException {
         service.assignCollectionBoxToFundraisingEvent(eventId, boxId);
@@ -56,17 +53,15 @@ public class FundraisingEventController {
 
     @DeleteMapping("/{eventId}/unregister")
     public void unregisterCollectionBoxFromFundraisingEvent(
-            @PathVariable UUID eventId)
-            throws FundraisingEventDoesntExistException,
-            InvalidCollectionBoxException, InvalidFundraisingEventUUIDException {
+            @PathVariable("eventId") UUID eventId)
+            throws FundraisingEventDoesntExistException, InvalidCollectionBoxException, InvalidFundraisingEventUUIDException {
         service.unregisterCollectionBoxFromFundraisingEvent(eventId);
     }
 
     @PostMapping("/{eventId}/transfer")
     public void transferMoney(
-            @PathVariable UUID eventId)
-            throws FundraisingEventDoesntExistException, InvalidCurrencyOrAmountException,
-            CollectionBoxDoesntExistException {
+            @PathVariable("eventId") UUID eventId)
+            throws FundraisingEventDoesntExistException, InvalidCurrencyOrAmountException, CollectionBoxDoesntExistException {
         service.transferMoney(eventId);
     }
 }

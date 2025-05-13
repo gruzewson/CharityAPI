@@ -12,6 +12,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/boxes")
 public class CollectionBoxController {
+
     private final CollectionBoxService service;
 
     public CollectionBoxController(CollectionBoxService service) {
@@ -29,20 +30,21 @@ public class CollectionBoxController {
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable UUID id) throws CollectionBoxDoesntExistException {
+    public void delete(@PathVariable("id") UUID id) throws CollectionBoxDoesntExistException {
         service.unregisterBox(id);
     }
 
     @PatchMapping("/{id}/money")
     public CollectionBox putMoney(
-            @PathVariable UUID id,
-            @RequestParam String currency,
-            @RequestParam double amount) throws CollectionBoxDoesntExistException, InvalidCurrencyOrAmountException {
-            return service.putMoney(id, currency, amount);
+            @PathVariable("id") UUID id,
+            @RequestParam("currency") String currency,
+            @RequestParam("amount") double amount)
+            throws CollectionBoxDoesntExistException, InvalidCurrencyOrAmountException {
+        return service.putMoney(id, currency, amount);
     }
 
     @PatchMapping("/{id}/empty")
-    public CollectionBox empty(@PathVariable UUID id) throws CollectionBoxDoesntExistException {
+    public CollectionBox empty(@PathVariable("id") UUID id) throws CollectionBoxDoesntExistException {
         return service.emptyBox(id);
     }
 }

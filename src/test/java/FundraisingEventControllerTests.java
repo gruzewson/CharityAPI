@@ -33,17 +33,19 @@ public class FundraisingEventControllerTests {
 
     @BeforeEach
     void setUp() {
-        sampleEvent = FundraisingEventFactory.createFundraisingEvent();
+        sampleEvent = FundraisingEventFactory.createFundraisingEvent("Test Event", "PLN");
     }
 
     @Test
     void createFundraisingEvent_ShouldReturnNewEvent() {
-        when(service.createFundraisingEvent()).thenReturn(sampleEvent);
+        String name = "Test Event";
+        String currency = "PLN";
+        when(service.createFundraisingEvent(name, currency)).thenReturn(sampleEvent);
 
-        FundraisingEvent result = controller.createFundraisingEvent();
+        FundraisingEvent result = controller.createFundraisingEvent(name, currency);
 
         assertSame(sampleEvent, result);
-        verify(service).createFundraisingEvent();
+        verify(service).createFundraisingEvent(name, currency);
     }
 
     @Test
