@@ -26,7 +26,7 @@ public class CollectionBoxTests {
         assertEquals(CORRECT_AMOUNT, box.getMoneyByCurrency(CORRECT_CURRENCY));
     }
 
-    private static Stream<Arguments> putMoneyInvalidArgumentsPutMoney() {
+    private static Stream<Arguments> putMoneyInvalidArguments() {
         return Stream.of(
                 Arguments.of(CORRECT_CURRENCY, -1.0),
                 Arguments.of("ERR", CORRECT_AMOUNT),
@@ -35,7 +35,7 @@ public class CollectionBoxTests {
     }
 
     @ParameterizedTest
-    @MethodSource("putMoneyInvalidArgumentsPutMoney")
+    @MethodSource("putMoneyInvalidArguments")
     public void putMoneyInvalidData_ShouldThrowException(String currency, double amount) {
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
         assertThrows(InvalidCurrencyOrAmountException.class, () -> box.putMoney(currency, amount));
