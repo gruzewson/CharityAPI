@@ -2,6 +2,7 @@ package app.services;
 
 import app.exceptions.CollectionBoxDoesntExistException;
 import app.exceptions.InvalidCurrencyOrAmountException;
+import app.factories.CollectionBoxFactory;
 import app.models.CollectionBox;
 import app.repositories.CollectionBoxRepository;
 import jakarta.transaction.Transactional;
@@ -19,7 +20,7 @@ public class CollectionBoxService {
     }
 
     public CollectionBox registerBox() {
-        return repo.save(new CollectionBox());
+        return repo.save(CollectionBoxFactory.createCollectionBox() );
     }
 
     public List<CollectionBox> listAll() {
