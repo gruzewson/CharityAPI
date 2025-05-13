@@ -19,7 +19,7 @@ public class CollectionBoxController {
     }
 
     @PostMapping
-    public CollectionBox create() {
+    public CollectionBox createBox() {
         return service.registerBox();
     }
 
@@ -38,11 +38,7 @@ public class CollectionBoxController {
             @PathVariable UUID id,
             @RequestParam String currency,
             @RequestParam double amount) throws CollectionBoxDoesntExistException, InvalidCurrencyOrAmountException {
-        try {
             return service.putMoney(id, currency, amount);
-        } catch (InvalidCurrencyOrAmountException | CollectionBoxDoesntExistException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @PatchMapping("/{id}/empty")
