@@ -14,23 +14,20 @@ import jakarta.persistence.*;
 @Table(name = "collection_boxes")
 public class CollectionBox {
     @Id
-    @Column(columnDefinition = "UUID")
-    private final UUID uuid;
+    @GeneratedValue
+    private UUID uuid;
 
-    @Column(name = "fundraising_event", columnDefinition = "UUID")
-    private UUID FundraisingEvent;
+    @OneToOne(mappedBy = "collectionBox")
+    private FundraisingEvent fundraisingEvent;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             name = "collection_box_money",
-            joinColumns = @JoinColumn(
-                    name            = "collection_box_id",
-                    referencedColumnName = "uuid"
-            )
+            joinColumns = @JoinColumn(name = "collection_box_id")
     )
     @MapKeyColumn(name = "currency")
     @Column(name = "amount", nullable = false)
-    private final Map<String, Double> money = new Hashtable<>();
+    private Map<String, Double> money = new Hashtable<>();
 
     public CollectionBox() {
         this.uuid = UUID.randomUUID();
@@ -76,25 +73,25 @@ public class CollectionBox {
         return true;
     }
 
-    public void assignFundraisingEvent(UUID fundraisingEvent) throws InvalidFundraisingEventUUIDException, InvalidEventAssignmentException {
-        if (fundraisingEvent == null) {
+    public void assignFundraisingEvent(FundraisingEvent newFundraisingEvent) throws InvalidFundraisingEventUUIDException, InvalidEventAssignmentException {
+        if (newFundraisingEvent == null) {
             throw new InvalidFundraisingEventUUIDException("Fundraising event cannot be null");
         }
-        if (this.FundraisingEvent != null) {
+        if (this.fundraisingEvent != null) {
             throw new InvalidEventAssignmentException("Fundraising event is already assigned");
         }
         if(!this.isEmpty())
         {
             throw new InvalidEventAssignmentException("Collection box is not empty");
         }
-        this.FundraisingEvent = fundraisingEvent;
+        this.fundraisingEvent = newFundraisingEvent;
     }
 
-    public UUID getFundraisingEvent() {
-        return FundraisingEvent;
+    public FundraisingEvent getFundraisingEvent() {
+        return fundraisingEvent;
     }
 
     public Boolean isAssignedToFundraisingEvent() {
-        return FundraisingEvent != null;
+        return fundraisingEvent != null;
     }
 }

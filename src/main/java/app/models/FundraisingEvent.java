@@ -1,26 +1,90 @@
 package app.models;
 
+import app.exceptions.InvalidCollectionBoxException;
+import app.exceptions.InvalidCurrencyOrAmountException;
+import app.exceptions.InvalidEventAssignmentException;
+import app.exceptions.InvalidFundraisingEventUUIDException;
+import app.services.CurrencyConverter;
+import jakarta.persistence.*;
 import java.util.UUID;
 
+@Entity
+@Table(name = "fundraising_events")
 public class FundraisingEvent {
-    private String name;
+
+    @Id
+    @GeneratedValue
     private UUID uuid;
-    private String Currency;
-    private Double AccountBalance;
+
+    @Column(nullable = false)
+    public String name;
+
+    @Column(nullable = false)
+    private String currency;
+
+    @Column(nullable = false)
+    private Double accountBalance;
+
+    @OneToOne
+    @JoinColumn(name = "collection_box_id", referencedColumnName = "uuid")
     private CollectionBox collectionBox;
+
+
+
+    public FundraisingEvent() {}
 
     public FundraisingEvent(String name, String currency) {
         this.name = name;
-        this.uuid = UUID.randomUUID();
-        Currency = currency;
-        AccountBalance = 0.0;
+        this.currency = currency;
+        this.accountBalance = 0.0;
+    }
+
+    public UUID getUuid() {
+        return uuid;
     }
 
     public Double getAccountBalance() {
-        return AccountBalance;
+        return accountBalance;
     }
 
-    public void assignCollectionBox(UUID uuid) {
-
+    public String getCurrency() {
+        return currency;
     }
+
+    public CollectionBox getCollectionBox() {
+        return collectionBox;
+    }
+
+    public void assignCollectionBox(CollectionBox collectionBox)
+            throws InvalidEventAssignmentException, InvalidCollectionBoxException, InvalidFundraisingEventUUIDException {
+        if (collectionBox == null) {
+            throw new InvalidCollectionBoxException("Collection box cannot be null");
+        }
+        this.collectionBox = collectionBox;
+        this.collectionBox.assignFundraisingEvent(this);
+    }
+
+    public void unregisterCollectionBox() throws InvalidCollectionBoxException {
+        if (this.collectionBox == null) {
+            throw new InvalidCollectionBoxException("Collection box is not assigned to this event");
+        }
+        this.collectionBox.emptyBoxFully();
+        this.collectionBox = null;
+    }
+
+    public void transferMoney() throws InvalidCurrencyOrAmountException {
+        CurrencyConverter currencyConverter = new CurrencyConverter();
+        for (Currencies currency : Currencies.values()) {
+            Double amount = collectionBox.getMoneyByCurrency(String.valueOf(currency));
+            if (amount != null) {
+                if (!currency.toString().equals(this.currency)) {
+                    amount = CurrencyConverter.convertCurrency(currency.toString(), this.currency, amount);
+                }
+                accountBalance += amount;
+            }
+        }
+        collectionBox.emptyBoxFully();
+    }
+
+
 }
