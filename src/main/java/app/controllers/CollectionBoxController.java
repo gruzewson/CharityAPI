@@ -23,7 +23,7 @@ public class CollectionBoxController {
         return service.registerBox();
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public List<CollectionBox> getAll() {
         return service.listAll();
     }
