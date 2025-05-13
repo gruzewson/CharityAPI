@@ -141,4 +141,19 @@ public class CollectionBoxTests {
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
         assertFalse(box.isAssignedToFundraisingEvent());
     }
+
+    @Test
+    public void unregisterFundraisingEvent_ShouldUnassign() throws InvalidFundraisingEventUUIDException, InvalidEventAssignmentException {
+        CollectionBox box = CollectionBoxFactory.createCollectionBox();
+        FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent();
+        box.assignFundraisingEvent(event);
+        box.unregisterFundraisingEvent();
+        assertNull(box.getFundraisingEvent());
+    }
+
+    @Test
+    public void unregisterFundraisingEvent_ShouldThrowExceptionWhenNotAssigned() {
+        CollectionBox box = CollectionBoxFactory.createCollectionBox();
+        assertThrows(InvalidFundraisingEventUUIDException.class, () -> box.unregisterFundraisingEvent());
+    }
 }

@@ -87,6 +87,13 @@ public class CollectionBox {
         this.fundraisingEvent = newFundraisingEvent;
     }
 
+    public void unregisterFundraisingEvent() throws InvalidFundraisingEventUUIDException {
+        if (this.fundraisingEvent == null) {
+            throw new InvalidFundraisingEventUUIDException("Fundraising event is not assigned");
+        }
+        this.fundraisingEvent = null;
+    }
+
     public FundraisingEvent getFundraisingEvent() {
         return fundraisingEvent;
     }

@@ -1,9 +1,6 @@
 package app.models;
 
-import app.exceptions.InvalidCollectionBoxException;
-import app.exceptions.InvalidCurrencyOrAmountException;
-import app.exceptions.InvalidEventAssignmentException;
-import app.exceptions.InvalidFundraisingEventUUIDException;
+import app.exceptions.*;
 import app.services.CurrencyConverter;
 import jakarta.persistence.*;
 import java.util.UUID;
@@ -56,23 +53,36 @@ public class FundraisingEvent {
     }
 
     public void assignCollectionBox(CollectionBox collectionBox)
-            throws InvalidEventAssignmentException, InvalidCollectionBoxException, InvalidFundraisingEventUUIDException {
+            throws InvalidEventAssignmentException, InvalidCollectionBoxException, InvalidFundraisingEventUUIDException, CollectionBoxAlreadyAssignedException {
         if (collectionBox == null) {
             throw new InvalidCollectionBoxException("Collection box cannot be null");
+        }
+        if(collectionBox.isAssignedToFundraisingEvent())
+            throw new CollectionBoxAlreadyAssignedException("Collection box is already assigned to another event");
+        if (this.collectionBox != null) {
+            throw new CollectionBoxAlreadyAssignedException("This event already has a collection box assigned");
         }
         this.collectionBox = collectionBox;
         this.collectionBox.assignFundraisingEvent(this);
     }
 
-    public void unregisterCollectionBox() throws InvalidCollectionBoxException {
+    public void unregisterCollectionBox() throws InvalidCollectionBoxException, InvalidFundraisingEventUUIDException {
         if (this.collectionBox == null) {
             throw new InvalidCollectionBoxException("Collection box is not assigned to this event");
         }
         this.collectionBox.emptyBoxFully();
+        this.collectionBox.unregisterFundraisingEvent();
         this.collectionBox = null;
     }
 
-    public void transferMoney() throws InvalidCurrencyOrAmountException {
+    public void transferMoney()
+            throws InvalidCurrencyOrAmountException, CollectionBoxDoesntExistException {
+        if(this.collectionBox == null) {
+            throw new CollectionBoxDoesntExistException();
+        }
+        if(this.collectionBox.isEmpty()){
+            return;
+        }
         CurrencyConverter currencyConverter = new CurrencyConverter();
         for (Currencies currency : Currencies.values()) {
             Double amount = collectionBox.getMoneyByCurrency(String.valueOf(currency));
