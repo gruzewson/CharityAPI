@@ -170,14 +170,12 @@ class CollectionBoxControllerTests {
         verify(service).putMoney(boxId, currency, amount);
     }
 
-
-
     @Test
     void empty_ShouldReturnEmptiedBox() throws Exception {
         UUID boxId = sampleBox.getUuid();
         sampleBox.putMoney(CORRECT_CURRENCY, CORRECT_AMOUNT);
 
-        when(service.emptyBox(boxId)).thenAnswer(_ -> {
+        when(service.emptyBox(boxId)).thenAnswer(invocation -> {
             sampleBox.emptyBoxFully();
             return sampleBox;
         });

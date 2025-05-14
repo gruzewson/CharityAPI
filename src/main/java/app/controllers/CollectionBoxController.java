@@ -6,6 +6,7 @@ import app.models.CollectionBox;
 import app.services.CollectionBoxService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -25,7 +26,6 @@ public class CollectionBoxController {
         return service.registerBox();
     }
 
-
     @GetMapping
     public List<CollectionBox> getAll() {
         return service.listAll();
@@ -33,21 +33,21 @@ public class CollectionBoxController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID id) throws CollectionBoxException {
+    public void delete(@PathVariable("id") UUID id) throws CollectionBoxException {
         service.unregisterBox(id);
     }
 
     @PatchMapping("/{id}/money")
     public CollectionBox putMoney(
-            @PathVariable UUID id,
-            @RequestParam String currency,
-            @RequestParam double amount
+            @PathVariable("id") UUID id,
+            @RequestParam("currency") String currency,
+            @RequestParam("amount") double amount
     ) throws CollectionBoxException, ArgumentsException {
         return service.putMoney(id, currency, amount);
     }
 
     @PatchMapping("/{id}/empty")
-    public CollectionBox empty(@PathVariable UUID id) throws CollectionBoxException {
+    public CollectionBox empty(@PathVariable("id") UUID id) throws CollectionBoxException {
         return service.emptyBox(id);
     }
 }

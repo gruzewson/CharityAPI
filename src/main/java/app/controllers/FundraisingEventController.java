@@ -25,8 +25,9 @@ public class FundraisingEventController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public FundraisingEvent createFundraisingEvent(
-            @RequestParam String name,
-            @RequestParam String currency) {
+            @RequestParam("name") String name,
+            @RequestParam("currency") String currency
+    ) {
         return service.createFundraisingEvent(name, currency);
     }
 
@@ -41,40 +42,42 @@ public class FundraisingEventController {
     }
 
     @GetMapping("/{id}")
-    public FundraisingEvent getFundraisingEventById(@PathVariable UUID id)
-            throws FundraisingEventException {
+    public FundraisingEvent getFundraisingEventById(
+            @PathVariable("id") UUID id
+    ) throws FundraisingEventException {
         return service.getFundraisingEventById(id);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteFundraisingEventById(@PathVariable UUID id)
-            throws FundraisingEventException {
+    public void deleteFundraisingEventById(
+            @PathVariable("id") UUID id
+    ) throws FundraisingEventException {
         service.deleteFundraisingEventById(id);
     }
 
     @PatchMapping("/{eventId}/boxes/{boxId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void assignCollectionBoxToFundraisingEvent(
-            @PathVariable UUID eventId,
-            @PathVariable UUID boxId)
-            throws FundraisingEventException, CollectionBoxException {
+            @PathVariable("eventId") UUID eventId,
+            @PathVariable("boxId") UUID boxId
+    ) throws FundraisingEventException, CollectionBoxException {
         service.assignCollectionBoxToFundraisingEvent(eventId, boxId);
     }
 
     @DeleteMapping("/{eventId}/collection-box")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void unregisterCollectionBoxFromFundraisingEvent(
-            @PathVariable UUID eventId)
-            throws FundraisingEventException, CollectionBoxException {
+            @PathVariable("eventId") UUID eventId
+    ) throws FundraisingEventException, CollectionBoxException {
         service.unregisterCollectionBoxFromFundraisingEvent(eventId);
     }
 
     @PostMapping("/{eventId}/transfer")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void transferMoney(
-            @PathVariable UUID eventId)
-            throws FundraisingEventException, ArgumentsException, CollectionBoxException {
+            @PathVariable("eventId") UUID eventId
+    ) throws FundraisingEventException, ArgumentsException, CollectionBoxException {
         service.transferMoney(eventId);
     }
 }
