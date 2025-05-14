@@ -1,12 +1,10 @@
+package fundraising_event_tests;
+
 import app.controllers.FundraisingEventController;
 import app.exceptions.arguments.ArgumentsException;
-import app.exceptions.collection_box.CollectionBoxAlreadyAssignedException;
-import app.exceptions.collection_box.CollectionBoxDoesntExistException;
 import app.exceptions.collection_box.CollectionBoxException;
-import app.exceptions.collection_box.InvalidCollectionBoxException;
 import app.exceptions.fundraising_event.FundraisingEventDoesntExistException;
 import app.exceptions.fundraising_event.FundraisingEventException;
-import app.exceptions.fundraising_event.InvalidEventAssignmentException;
 import app.factories.FundraisingEventFactory;
 import app.models.FinancialReportProjection;
 import app.models.FundraisingEvent;
@@ -115,7 +113,7 @@ public class FundraisingEventControllerTests {
 
     @Test
     void unregisterCollectionBoxFromFundraisingEvent_ShouldCallService()
-            throws FundraisingEventException, InvalidCollectionBoxException {
+            throws FundraisingEventException, CollectionBoxException {
         UUID eventId = sampleEvent.getUuid();
 
         controller.unregisterCollectionBoxFromFundraisingEvent(eventId);
@@ -126,7 +124,7 @@ public class FundraisingEventControllerTests {
     @Test
     void transferMoney_ShouldCallService()
             throws FundraisingEventDoesntExistException,
-            CollectionBoxDoesntExistException, ArgumentsException {
+            CollectionBoxException, ArgumentsException {
         UUID eventId = sampleEvent.getUuid();
 
         controller.transferMoney(eventId);

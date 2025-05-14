@@ -1,11 +1,10 @@
+package fundraising_event_tests;
+
 import app.exceptions.arguments.ArgumentsException;
-import app.exceptions.collection_box.CollectionBoxAlreadyAssignedException;
 import app.exceptions.collection_box.CollectionBoxDoesntExistException;
 import app.exceptions.collection_box.CollectionBoxException;
-import app.exceptions.collection_box.InvalidCollectionBoxException;
 import app.exceptions.fundraising_event.FundraisingEventDoesntExistException;
 import app.exceptions.fundraising_event.FundraisingEventException;
-import app.exceptions.fundraising_event.InvalidEventAssignmentException;
 import app.factories.CollectionBoxFactory;
 import app.factories.FundraisingEventFactory;
 import app.models.CollectionBox;

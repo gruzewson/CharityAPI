@@ -1,3 +1,5 @@
+package collection_box_tests;
+
 import app.exceptions.arguments.*;
 import app.exceptions.collection_box.*;
 import app.exceptions.fundraising_event.*;

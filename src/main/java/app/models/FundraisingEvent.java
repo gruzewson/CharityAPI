@@ -1,13 +1,8 @@
 package app.models;
 
-import app.exceptions.arguments.ArgumentsException;
-import app.exceptions.collection_box.CollectionBoxAlreadyAssignedException;
-import app.exceptions.collection_box.CollectionBoxDoesntExistException;
-import app.exceptions.collection_box.CollectionBoxException;
-import app.exceptions.collection_box.InvalidCollectionBoxException;
-import app.exceptions.fundraising_event.FundraisingEventException;
-import app.exceptions.fundraising_event.InvalidEventAssignmentException;
-import app.exceptions.fundraising_event.InvalidFundraisingEventException;
+import app.exceptions.arguments.*;
+import app.exceptions.collection_box.*;
+import app.exceptions.fundraising_event.*;
 import app.services.CurrencyConverter;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -18,11 +13,10 @@ import java.util.UUID;
 public class FundraisingEvent {
 
     @Id
-    @GeneratedValue
     private UUID uuid;
 
     @Column(nullable = false)
-    public String name;
+    private String name;
 
     @Column(nullable = false)
     private String currency;
@@ -36,14 +30,13 @@ public class FundraisingEvent {
     private CollectionBox collectionBox;
 
     public FundraisingEvent(String name, String currency) {
+        this.uuid = UUID.randomUUID();
         this.name = name;
         this.currency = currency;
         this.accountBalance = 0.0;
     }
 
-    public FundraisingEvent() {
-
-    }
+    public FundraisingEvent() {}
 
     public UUID getUuid() {
         return uuid;
@@ -62,9 +55,9 @@ public class FundraisingEvent {
     }
 
     public void assignCollectionBox(CollectionBox collectionBox)
-            throws FundraisingEventException, CollectionBoxException {
+            throws CollectionBoxException, FundraisingEventException {
         if (collectionBox == null) {
-            throw new InvalidCollectionBoxException("Collection box cannot be null");
+            throw new CollectionBoxDoesntExistException();
         }
         if(collectionBox.isAssignedToFundraisingEvent())
             throw new CollectionBoxAlreadyAssignedException("Collection box is already assigned to another event");
@@ -75,7 +68,7 @@ public class FundraisingEvent {
         this.collectionBox.assignFundraisingEvent(this);
     }
 
-    public void unregisterCollectionBox() throws InvalidCollectionBoxException, FundraisingEventException {
+    public void unregisterCollectionBox() throws CollectionBoxException, FundraisingEventException {
         if (this.collectionBox == null) {
             throw new InvalidCollectionBoxException("Collection box is not assigned to this event");
         }
@@ -85,14 +78,13 @@ public class FundraisingEvent {
     }
 
     public void transferMoney()
-            throws ArgumentsException, CollectionBoxDoesntExistException {
+            throws ArgumentsException, CollectionBoxException {
         if(this.collectionBox == null) {
-            throw new CollectionBoxDoesntExistException();
+            throw new InvalidCollectionBoxException("Collection box is not assigned to this event");
         }
         if(this.collectionBox.isEmpty()){
             return;
         }
-        CurrencyConverter currencyConverter = new CurrencyConverter();
         for (Currencies currency : Currencies.values()) {
             Double amount = collectionBox.getMoneyByCurrency(String.valueOf(currency));
             if (amount != null) {
@@ -104,6 +96,4 @@ public class FundraisingEvent {
         }
         collectionBox.emptyBoxFully();
     }
-
-
 }

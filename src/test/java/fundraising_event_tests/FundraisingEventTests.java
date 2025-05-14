@@ -1,10 +1,8 @@
-import app.exceptions.arguments.ArgumentsException;
-import app.exceptions.collection_box.CollectionBoxAlreadyAssignedException;
-import app.exceptions.collection_box.CollectionBoxDoesntExistException;
-import app.exceptions.collection_box.CollectionBoxException;
-import app.exceptions.collection_box.InvalidCollectionBoxException;
-import app.exceptions.fundraising_event.FundraisingEventException;
-import app.exceptions.fundraising_event.InvalidEventAssignmentException;
+package fundraising_event_tests;
+
+import app.exceptions.arguments.*;
+import app.exceptions.collection_box.*;
+import app.exceptions.fundraising_event.*;
 import app.factories.CollectionBoxFactory;
 import app.factories.FundraisingEventFactory;
 import app.models.CollectionBox;
@@ -40,11 +38,10 @@ public class FundraisingEventTests {
     }
 
     @Test
-    public void assignCollectionBox_ShouldThrowException_WhenCollectionBoxIsNull()
-            throws InvalidEventAssignmentException,  CollectionBoxAlreadyAssignedException {
+    public void assignCollectionBox_ShouldThrowException_WhenCollectionBoxIsNull() {
         FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent();
 
-        assertThrows(InvalidCollectionBoxException.class, () -> {
+        assertThrows(CollectionBoxDoesntExistException.class, () -> {
             event.assignCollectionBox(null);
         });
     }
@@ -75,8 +72,7 @@ public class FundraisingEventTests {
     }
 
     @Test
-    public void unregisterCollectionBox_ShouldThrowException_WhenNoCollectionBoxAssigned()
-            throws InvalidEventAssignmentException, CollectionBoxAlreadyAssignedException {
+    public void unregisterCollectionBox_ShouldThrowException_WhenNoCollectionBoxAssigned() {
         FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent();
 
         assertThrows(InvalidCollectionBoxException.class, () -> {
@@ -102,7 +98,7 @@ public class FundraisingEventTests {
     {
         FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent("Test Event", "PLN");
 
-        assertThrows(CollectionBoxDoesntExistException.class, () -> {
+        assertThrows(InvalidCollectionBoxException.class, () -> {
             event.transferMoney();
         });
     }

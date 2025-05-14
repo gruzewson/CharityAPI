@@ -61,14 +61,14 @@ public class FundraisingEventController {
     @DeleteMapping("/{eventId}/unregister")
     public void unregisterCollectionBoxFromFundraisingEvent(
             @PathVariable("eventId") UUID eventId)
-            throws FundraisingEventException, InvalidCollectionBoxException {
+            throws FundraisingEventException, CollectionBoxException {
         service.unregisterCollectionBoxFromFundraisingEvent(eventId);
     }
 
     @PostMapping("/{eventId}/transfer")
     public void transferMoney(
             @PathVariable("eventId") UUID eventId)
-            throws FundraisingEventDoesntExistException, ArgumentsException, CollectionBoxDoesntExistException {
+            throws FundraisingEventDoesntExistException, ArgumentsException, CollectionBoxException {
         service.transferMoney(eventId);
     }
 }

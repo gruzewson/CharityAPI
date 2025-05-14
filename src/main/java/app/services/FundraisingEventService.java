@@ -74,7 +74,7 @@ public class FundraisingEventService {
 
     @Transactional
     public void unregisterCollectionBoxFromFundraisingEvent(UUID eventId)
-            throws FundraisingEventException, InvalidCollectionBoxException {
+            throws FundraisingEventException, CollectionBoxException {
         FundraisingEvent event = repo.findById(eventId)
                 .orElseThrow(() -> new FundraisingEventDoesntExistException());
         event.unregisterCollectionBox();
@@ -97,7 +97,7 @@ public class FundraisingEventService {
 
     @Transactional
     public void transferMoney(UUID eventId)
-            throws FundraisingEventDoesntExistException, ArgumentsException, CollectionBoxDoesntExistException {
+            throws FundraisingEventDoesntExistException, ArgumentsException, CollectionBoxException {
         FundraisingEvent event = repo.findById(eventId)
                 .orElseThrow(() -> new FundraisingEventDoesntExistException());
         event.transferMoney();

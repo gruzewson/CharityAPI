@@ -1,3 +1,5 @@
+package collection_box_tests;
+
 import app.controllers.CollectionBoxController;
 import app.exceptions.arguments.ArgumentsException;
 import app.exceptions.collection_box.CollectionBoxDoesntExistException;
