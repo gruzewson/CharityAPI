@@ -1,15 +1,9 @@
 package app.services;
 
 
-import app.exceptions.arguments.ArgumentsException;
-import app.exceptions.collection_box.CollectionBoxAlreadyAssignedException;
-import app.exceptions.collection_box.CollectionBoxDoesntExistException;
-import app.exceptions.collection_box.CollectionBoxException;
-import app.exceptions.collection_box.InvalidCollectionBoxException;
-import app.exceptions.fundraising_event.FundraisingEventDoesntExistException;
-import app.exceptions.fundraising_event.FundraisingEventException;
-import app.exceptions.fundraising_event.InvalidEventAssignmentException;
-import app.exceptions.fundraising_event.InvalidFundraisingEventException;
+import app.exceptions.arguments.*;
+import app.exceptions.collection_box.*;
+import app.exceptions.fundraising_event.*;
 import app.factories.FundraisingEventFactory;
 import app.models.CollectionBox;
 import app.models.FinancialReportProjection;
@@ -34,11 +28,6 @@ public class FundraisingEventService {
     }
 
     @Transactional
-    public FundraisingEvent createFundraisingEvent() {
-        return repo.save(FundraisingEventFactory.createFundraisingEvent());
-    }
-
-    @Transactional
     public FundraisingEvent createFundraisingEvent(String name, String currency) {
         return repo.save(FundraisingEventFactory.createFundraisingEvent(name, currency));
     }
@@ -54,11 +43,10 @@ public class FundraisingEventService {
     }
 
     @Transactional
-    public void deleteFundraisingEventById(UUID id) throws FundraisingEventDoesntExistException {
-        if (!repo.existsById(id)) {
-            throw new FundraisingEventDoesntExistException();
-        }
-        repo.deleteById(id);
+    public void deleteFundraisingEventById(UUID id) throws FundraisingEventException {
+        FundraisingEvent event = repo.findById(id)
+                .orElseThrow(FundraisingEventDoesntExistException::new);
+        repo.delete(event);
     }
 
     @Transactional
@@ -83,21 +71,21 @@ public class FundraisingEventService {
 
     @Transactional
     public CollectionBox getCollectionBoxByFundraisingEventId(UUID eventId)
-            throws FundraisingEventDoesntExistException {
+            throws FundraisingEventException {
         FundraisingEvent event = repo.findById(eventId)
                 .orElseThrow(() -> new FundraisingEventDoesntExistException());
         return event.getCollectionBox();
     }
 
     @Transactional
-    public FundraisingEvent getFundraisingEventById(UUID id) throws FundraisingEventDoesntExistException {
+    public FundraisingEvent getFundraisingEventById(UUID id) throws FundraisingEventException {
         return repo.findById(id)
                 .orElseThrow(() -> new FundraisingEventDoesntExistException());
     }
 
     @Transactional
     public void transferMoney(UUID eventId)
-            throws FundraisingEventDoesntExistException, ArgumentsException, CollectionBoxException {
+            throws FundraisingEventException, ArgumentsException, CollectionBoxException {
         FundraisingEvent event = repo.findById(eventId)
                 .orElseThrow(() -> new FundraisingEventDoesntExistException());
         event.transferMoney();

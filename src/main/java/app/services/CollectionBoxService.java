@@ -1,7 +1,7 @@
 package app.services;
 
 import app.exceptions.arguments.ArgumentsException;
-import app.exceptions.collection_box.CollectionBoxDoesntExistException;
+import app.exceptions.collection_box.*;
 import app.factories.CollectionBoxFactory;
 import app.models.CollectionBox;
 import app.repositories.CollectionBoxRepository;
@@ -28,7 +28,7 @@ public class CollectionBoxService {
     }
 
     @Transactional
-    public CollectionBox putMoney(UUID id, String currency, double amount) throws CollectionBoxDoesntExistException, ArgumentsException {
+    public CollectionBox putMoney(UUID id, String currency, double amount) throws CollectionBoxException, ArgumentsException {
         CollectionBox box = repo.findById(id)
                 .orElseThrow(() -> new CollectionBoxDoesntExistException());
         box.putMoney(currency, amount);
@@ -36,15 +36,14 @@ public class CollectionBoxService {
     }
 
     @Transactional
-    public void unregisterBox(UUID id) throws CollectionBoxDoesntExistException {
-        if (!repo.existsById(id)) {
-            throw new CollectionBoxDoesntExistException();
-        }
-        repo.deleteById(id);
+    public void unregisterBox(UUID id) throws CollectionBoxException {
+        CollectionBox box = repo.findById(id)
+                .orElseThrow(CollectionBoxDoesntExistException::new);
+        repo.delete(box);
     }
 
     @Transactional
-    public CollectionBox emptyBox(UUID id) throws CollectionBoxDoesntExistException {
+    public CollectionBox emptyBox(UUID id) throws CollectionBoxException {
         CollectionBox box = repo.findById(id)
                 .orElseThrow(() -> new CollectionBoxDoesntExistException());
         box.emptyBoxFully();

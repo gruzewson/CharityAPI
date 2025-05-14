@@ -1,8 +1,9 @@
 package collection_box_tests;
 
 import app.controllers.CollectionBoxController;
-import app.exceptions.arguments.ArgumentsException;
-import app.exceptions.collection_box.CollectionBoxDoesntExistException;
+import app.exceptions.arguments.*;
+import app.exceptions.collection_box.*;
+import app.factories.CollectionBoxFactory;
 import app.models.CollectionBox;
 import app.services.CollectionBoxService;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,8 +36,11 @@ class CollectionBoxControllerTests {
 
     @BeforeEach
     void setUp() {
-        sampleBox = new CollectionBox();
+        sampleBox = CollectionBoxFactory.createCollectionBox();
     }
+
+    private static final String CORRECT_CURRENCY = "PLN";
+    private static final double CORRECT_AMOUNT = 100.0;
 
     @Test
     void create_ShouldReturnNewBox() {
@@ -45,6 +49,7 @@ class CollectionBoxControllerTests {
         CollectionBox result = controller.createBox();
 
         assertSame(sampleBox, result);
+        assertEquals(sampleBox.getUuid(), result.getUuid());
         verify(service).registerBox();
     }
 
@@ -60,7 +65,18 @@ class CollectionBoxControllerTests {
     }
 
     @Test
-    void delete_ShouldCallServiceToDeleteBox() throws CollectionBoxDoesntExistException {
+    void getAll_ShouldReturnEmptyList_WhenNoBoxesExist() {
+        when(service.listAll()).thenReturn(Collections.emptyList());
+
+        List<CollectionBox> result = controller.getAll();
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+
+    @Test
+    void delete_ShouldCallServiceToDeleteBox() throws CollectionBoxException {
         UUID boxId = sampleBox.getUuid();
 
         controller.delete(boxId);
@@ -69,7 +85,7 @@ class CollectionBoxControllerTests {
     }
 
     @Test
-    void delete_BoxDoesntExist_ShouldThrowException() throws CollectionBoxDoesntExistException {
+    void delete_BoxDoesntExist_ShouldThrowException() throws CollectionBoxException {
         UUID boxId = UUID.randomUUID();
 
         doThrow(CollectionBoxDoesntExistException.class).when(service).unregisterBox(boxId);
@@ -80,60 +96,88 @@ class CollectionBoxControllerTests {
     }
 
     @Test
-    void putMoney_ShouldReturnUpdatedBox() throws CollectionBoxDoesntExistException, ArgumentsException {
+    void putMoney_ShouldReturnUpdatedBox() throws CollectionBoxException, ArgumentsException {
         UUID boxId = sampleBox.getUuid();
-        String currency = "PLN";
-        double amount = 100.0;
 
-        when(service.putMoney(boxId, currency, amount)).thenReturn(sampleBox);
+        when(service.putMoney(boxId,  CORRECT_CURRENCY, CORRECT_AMOUNT)).thenReturn(sampleBox);
 
-        CollectionBox result = controller.putMoney(boxId, currency, amount);
+        CollectionBox result = controller.putMoney(boxId,  CORRECT_CURRENCY, CORRECT_AMOUNT);
 
         assertSame(sampleBox, result);
-        verify(service).putMoney(boxId, currency, amount);
+        verify(service).putMoney(boxId,  CORRECT_CURRENCY, CORRECT_AMOUNT);
     }
 
     @Test
-    void putMoney_BoxDoesntExist_ShouldThrowException() throws CollectionBoxDoesntExistException, ArgumentsException {
-        UUID boxId = UUID.randomUUID();
-        String currency = "PLN";
-        double amount = 100.0;
+    void putMoney_ValidAmount_ShouldUpdateBox() throws CollectionBoxException, ArgumentsException {
+        UUID boxId = sampleBox.getUuid();
+        when(service.putMoney(boxId, CORRECT_CURRENCY, CORRECT_AMOUNT)).thenReturn(sampleBox);
 
-        doThrow(CollectionBoxDoesntExistException.class).when(service).putMoney(boxId, currency, amount);
+        CollectionBox result = controller.putMoney(boxId, CORRECT_CURRENCY, CORRECT_AMOUNT);
 
-        assertThrows(CollectionBoxDoesntExistException.class, () -> controller.putMoney(boxId, currency, amount));
-
-        verify(service).putMoney(boxId, currency, amount);
+        assertNotNull(result);
+        verify(service).putMoney(boxId, CORRECT_CURRENCY, CORRECT_AMOUNT);
     }
 
-    private static Stream<Arguments> putMoneyInvalidArguments() {
-        String CORRECT_CURRENCY = "PLN";
-        double CORRECT_AMOUNT = 100.0;
+
+    @Test
+    void putMoney_BoxDoesntExist_ShouldThrowException() throws CollectionBoxException, ArgumentsException {
+        UUID boxId = UUID.randomUUID();
+
+        doThrow(CollectionBoxDoesntExistException.class).when(service).putMoney(boxId,  CORRECT_CURRENCY, CORRECT_AMOUNT);
+
+        assertThrows(CollectionBoxDoesntExistException.class, () -> controller.putMoney(boxId,  CORRECT_CURRENCY, CORRECT_AMOUNT));
+
+        verify(service).putMoney(boxId,  CORRECT_CURRENCY, CORRECT_AMOUNT);
+    }
+
+    private static Stream<Arguments> invalidAmounts() {
         return Stream.of(
                 Arguments.of(CORRECT_CURRENCY, -1.0),
-                Arguments.of("ERR", CORRECT_AMOUNT),
-                Arguments.of(null, CORRECT_AMOUNT)
+                Arguments.of(CORRECT_CURRENCY, -100.0),
+                Arguments.of(CORRECT_CURRENCY, 0.0)
         );
     }
 
     @ParameterizedTest
-    @MethodSource("putMoneyInvalidArguments")
-    void putMoney_ShouldThrowException_WhenInvalidCurrencyOrAmount(String currency, double amount) throws CollectionBoxDoesntExistException, ArgumentsException {
+    @MethodSource("invalidAmounts")
+    void putMoney_ShouldThrowInvalidAmountException(String currency, double amount) throws CollectionBoxException, ArgumentsException {
         UUID boxId = sampleBox.getUuid();
 
-        doThrow(ArgumentsException.class).when(service).putMoney(boxId, currency, amount);
+        doThrow(InvalidAmountException.class).when(service).putMoney(boxId, currency, amount);
 
-        assertThrows(ArgumentsException.class, () -> controller.putMoney(boxId, currency, amount));
+        assertThrows(InvalidAmountException.class, () -> controller.putMoney(boxId, currency, amount));
 
         verify(service).putMoney(boxId, currency, amount);
     }
 
+    private static Stream<Arguments> invalidCurrencies() {
+        return Stream.of(
+                Arguments.of("ERR", CORRECT_AMOUNT),
+                Arguments.of(null, CORRECT_AMOUNT),
+                Arguments.of("", CORRECT_AMOUNT)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidCurrencies")
+    void putMoney_ShouldThrowInvalidCurrencyException(String currency, double amount) throws CollectionBoxException, ArgumentsException {
+        UUID boxId = sampleBox.getUuid();
+
+        doThrow(InvalidCurrencyException.class).when(service).putMoney(boxId, currency, amount);
+
+        assertThrows(InvalidCurrencyException.class, () -> controller.putMoney(boxId, currency, amount));
+
+        verify(service).putMoney(boxId, currency, amount);
+    }
+
+
+
     @Test
     void empty_ShouldReturnEmptiedBox() throws Exception {
         UUID boxId = sampleBox.getUuid();
-        sampleBox.putMoney("PLN", 100.0);
+        sampleBox.putMoney(CORRECT_CURRENCY, CORRECT_AMOUNT);
 
-        when(service.emptyBox(boxId)).thenAnswer(invocation -> {
+        when(service.emptyBox(boxId)).thenAnswer(_ -> {
             sampleBox.emptyBoxFully();
             return sampleBox;
         });
@@ -141,7 +185,7 @@ class CollectionBoxControllerTests {
         CollectionBox result = controller.empty(boxId);
 
         assertSame(sampleBox, result);
-        assertEquals(0.0, result.getMoneyByCurrency("PLN"));
+        assertEquals(0.0, result.getMoneyByCurrency(CORRECT_CURRENCY));
     }
 
     @Test

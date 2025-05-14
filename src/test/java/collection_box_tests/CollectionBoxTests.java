@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class CollectionBoxTests {
     private static final String CORRECT_CURRENCY = "PLN";
     private static final double CORRECT_AMOUNT = 100.0;
+    private static final String CORRECT_NAME = "Test Event";
 
     @Test
     public void putMoneyValidData_ShouldPut() throws ArgumentsException {
@@ -111,7 +112,7 @@ public class CollectionBoxTests {
     @Test
     public void assignFundraisingEvent_ShouldAssignCorrectEvent() throws FundraisingEventException, CollectionBoxException {
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
-        FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent();
+        FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent(CORRECT_NAME, CORRECT_CURRENCY);
         box.assignFundraisingEvent(event);
         assertEquals(event, box.getFundraisingEvent());
     }
@@ -119,7 +120,7 @@ public class CollectionBoxTests {
     @Test
     public void assignFundraisingEvent_ShouldNotAssignWhenBoxIsNotEmpty() throws ArgumentsException {
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
-        FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent();
+        FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent(CORRECT_NAME, CORRECT_CURRENCY);
         box.putMoney(CORRECT_CURRENCY, CORRECT_AMOUNT);
         assertThrows(InvalidCollectionBoxException.class, () -> box.assignFundraisingEvent(event));
     }
@@ -128,7 +129,7 @@ public class CollectionBoxTests {
     public void assignFundraisingEvent_ShouldNotAssignWhenAlreadyAssigned()
             throws FundraisingEventException, CollectionBoxException {
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
-        FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent();
+        FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent(CORRECT_NAME, CORRECT_CURRENCY);
         box.assignFundraisingEvent(event);
         assertThrows(InvalidEventAssignmentException.class, () -> box.assignFundraisingEvent(event));
     }
@@ -142,7 +143,7 @@ public class CollectionBoxTests {
     @Test
     public void isAssigned_ShouldReturnTrueWhenAssigned() throws FundraisingEventException, CollectionBoxException {
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
-        FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent();
+        FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent(CORRECT_NAME, CORRECT_CURRENCY);
         box.assignFundraisingEvent(event);
         assertTrue(box.isAssignedToFundraisingEvent());
     }
@@ -156,7 +157,7 @@ public class CollectionBoxTests {
     @Test
     public void unregisterFundraisingEvent_ShouldUnassign() throws FundraisingEventException, CollectionBoxException {
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
-        FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent();
+        FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent(CORRECT_NAME, CORRECT_CURRENCY);
         box.assignFundraisingEvent(event);
         box.unregisterFundraisingEvent();
         assertNull(box.getFundraisingEvent());

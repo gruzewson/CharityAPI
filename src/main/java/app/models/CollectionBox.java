@@ -42,7 +42,7 @@ public class CollectionBox {
     }
 
     public void putMoney(String currency, double amount) throws ArgumentsException {
-        if (amount < 0) {
+        if (amount <= 0) {
             throw new InvalidAmountException(amount);
         }
         if (currency == null || !money.containsKey(currency)) {

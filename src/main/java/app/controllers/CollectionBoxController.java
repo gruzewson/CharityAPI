@@ -1,11 +1,11 @@
 package app.controllers;
 
 import app.exceptions.arguments.ArgumentsException;
-import app.exceptions.collection_box.CollectionBoxDoesntExistException;
+import app.exceptions.collection_box.CollectionBoxException;
 import app.models.CollectionBox;
 import app.services.CollectionBoxService;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -20,31 +20,34 @@ public class CollectionBoxController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public CollectionBox createBox() {
         return service.registerBox();
     }
 
-    @GetMapping("/all")
+
+    @GetMapping
     public List<CollectionBox> getAll() {
         return service.listAll();
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable("id") UUID id) throws CollectionBoxDoesntExistException {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable UUID id) throws CollectionBoxException {
         service.unregisterBox(id);
     }
 
     @PatchMapping("/{id}/money")
     public CollectionBox putMoney(
-            @PathVariable("id") UUID id,
-            @RequestParam("currency") String currency,
-            @RequestParam("amount") double amount)
-            throws CollectionBoxDoesntExistException, ArgumentsException {
+            @PathVariable UUID id,
+            @RequestParam String currency,
+            @RequestParam double amount
+    ) throws CollectionBoxException, ArgumentsException {
         return service.putMoney(id, currency, amount);
     }
 
     @PatchMapping("/{id}/empty")
-    public CollectionBox empty(@PathVariable("id") UUID id) throws CollectionBoxDoesntExistException {
+    public CollectionBox empty(@PathVariable UUID id) throws CollectionBoxException {
         return service.emptyBox(id);
     }
 }

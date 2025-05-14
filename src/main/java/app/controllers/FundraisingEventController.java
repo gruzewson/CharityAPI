@@ -1,17 +1,12 @@
 package app.controllers;
 
 import app.exceptions.arguments.ArgumentsException;
-import app.exceptions.collection_box.CollectionBoxAlreadyAssignedException;
-import app.exceptions.collection_box.CollectionBoxDoesntExistException;
 import app.exceptions.collection_box.CollectionBoxException;
-import app.exceptions.collection_box.InvalidCollectionBoxException;
-import app.exceptions.fundraising_event.FundraisingEventDoesntExistException;
 import app.exceptions.fundraising_event.FundraisingEventException;
-import app.exceptions.fundraising_event.InvalidEventAssignmentException;
-import app.exceptions.fundraising_event.InvalidFundraisingEventException;
 import app.models.FinancialReportProjection;
 import app.models.FundraisingEvent;
 import app.services.FundraisingEventService;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,14 +22,15 @@ public class FundraisingEventController {
         this.service = service;
     }
 
-    @PostMapping("/custom-event")
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public FundraisingEvent createFundraisingEvent(
-            @RequestParam("name") String name,
-            @RequestParam("currency") String currency) {
+            @RequestParam String name,
+            @RequestParam String currency) {
         return service.createFundraisingEvent(name, currency);
     }
 
-    @GetMapping("/all")
+    @GetMapping
     public List<FundraisingEvent> listAll() {
         return service.listAll();
     }
@@ -44,31 +40,41 @@ public class FundraisingEventController {
         return service.getFinancialReport();
     }
 
-    @DeleteMapping
-    public void deleteFundraisingEventById(@RequestParam("id") UUID id)
-            throws FundraisingEventDoesntExistException {
+    @GetMapping("/{id}")
+    public FundraisingEvent getFundraisingEventById(@PathVariable UUID id)
+            throws FundraisingEventException {
+        return service.getFundraisingEventById(id);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteFundraisingEventById(@PathVariable UUID id)
+            throws FundraisingEventException {
         service.deleteFundraisingEventById(id);
     }
 
     @PatchMapping("/{eventId}/boxes/{boxId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void assignCollectionBoxToFundraisingEvent(
-            @PathVariable("eventId") UUID eventId,
-            @PathVariable("boxId") UUID boxId)
+            @PathVariable UUID eventId,
+            @PathVariable UUID boxId)
             throws FundraisingEventException, CollectionBoxException {
         service.assignCollectionBoxToFundraisingEvent(eventId, boxId);
     }
 
-    @DeleteMapping("/{eventId}/unregister")
+    @DeleteMapping("/{eventId}/collection-box")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void unregisterCollectionBoxFromFundraisingEvent(
-            @PathVariable("eventId") UUID eventId)
+            @PathVariable UUID eventId)
             throws FundraisingEventException, CollectionBoxException {
         service.unregisterCollectionBoxFromFundraisingEvent(eventId);
     }
 
     @PostMapping("/{eventId}/transfer")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void transferMoney(
-            @PathVariable("eventId") UUID eventId)
-            throws FundraisingEventDoesntExistException, ArgumentsException, CollectionBoxException {
+            @PathVariable UUID eventId)
+            throws FundraisingEventException, ArgumentsException, CollectionBoxException {
         service.transferMoney(eventId);
     }
 }

@@ -1,25 +1,30 @@
 package collection_box_tests;
 
 import app.exceptions.arguments.ArgumentsException;
+import app.exceptions.arguments.InvalidAmountException;
+import app.exceptions.arguments.InvalidCurrencyException;
 import app.exceptions.collection_box.CollectionBoxDoesntExistException;
+import app.exceptions.collection_box.CollectionBoxException;
+import app.factories.CollectionBoxFactory;
 import app.models.CollectionBox;
 import app.repositories.CollectionBoxRepository;
 import app.services.CollectionBoxService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class CollectionBoxServiceTests {
@@ -35,87 +40,103 @@ class CollectionBoxServiceTests {
         MockitoAnnotations.openMocks(this);
     }
 
+    private static final String CORRECT_CURRENCY = "PLN";
+    private static final double CORRECT_AMOUNT = 100.0;
+
     @Test
     void registerBox_ShouldReturnNewCollectionBox() {
-        CollectionBox newBox = new CollectionBox();
+        CollectionBox newBox = CollectionBoxFactory.createCollectionBox();
         when(collectionBoxRepository.save(any(CollectionBox.class))).thenReturn(newBox);
 
         CollectionBox result = collectionBoxService.registerBox();
 
         assertNotNull(result);
+        assertEquals(newBox, result);
     }
 
     @Test
     void listAll_ShouldReturnListOfCollectionBoxes() {
-        CollectionBox box1 = new CollectionBox();
-        CollectionBox box2 = new CollectionBox();
+        CollectionBox box1 = CollectionBoxFactory.createCollectionBox();
+        CollectionBox box2 = CollectionBoxFactory.createCollectionBox();
         when(collectionBoxRepository.findAll()).thenReturn(List.of(box1, box2));
 
         List<CollectionBox> result = collectionBoxService.listAll();
 
         assertNotNull(result);
         assertEquals(2, result.size());
+        assertEquals(box1, result.get(0));
+        assertEquals(box2, result.get(1));
     }
 
     @Test
-    void putMoney_ShouldReturnUpdatedCollectionBox() throws CollectionBoxDoesntExistException, ArgumentsException {
-        CollectionBox box = new CollectionBox();
-        when(collectionBoxRepository.findById(any())).thenReturn(java.util.Optional.of(box));
+    void putMoney_ShouldReturnUpdatedCollectionBox() throws CollectionBoxException, ArgumentsException {
+        CollectionBox box = CollectionBoxFactory.createCollectionBox();
+        when(collectionBoxRepository.findById(any())).thenReturn(Optional.of(box));
         when(collectionBoxRepository.save(any(CollectionBox.class))).thenReturn(box);
 
-        CollectionBox result = collectionBoxService.putMoney(box.getUuid(), "PLN", 100.0);
+        CollectionBox result = collectionBoxService.putMoney(box.getUuid(), CORRECT_CURRENCY, CORRECT_AMOUNT);
 
         assertNotNull(result);
-        assertEquals(100.0, result.getMoneyByCurrency("PLN"));
+        assertEquals(CORRECT_AMOUNT, result.getMoneyByCurrency(CORRECT_CURRENCY));
     }
 
     @Test
     void putMoney_ShouldThrowException_WhenBoxDoesntExist() {
-        CollectionBox box = new CollectionBox();
-        when(collectionBoxRepository.findById(any())).thenReturn(java.util.Optional.empty());
+        CollectionBox box = CollectionBoxFactory.createCollectionBox();
+        when(collectionBoxRepository.findById(any())).thenReturn(Optional.empty());
 
         assertThrows(CollectionBoxDoesntExistException.class, () -> {
-            collectionBoxService.putMoney(box.getUuid(), "PLN", 100.0);
+            collectionBoxService.putMoney(box.getUuid(), CORRECT_CURRENCY, CORRECT_AMOUNT);
         });
     }
 
-    private static Stream<Arguments> putMoneyInvalidArguments() {
-        String CORRECT_CURRENCY = "PLN";
-        double CORRECT_AMOUNT = 100.0;
-        return Stream.of(
-                Arguments.of(CORRECT_CURRENCY, -1.0),
-                Arguments.of("ERR", CORRECT_AMOUNT),
-                Arguments.of(null, CORRECT_AMOUNT)
-        );
+    private static Stream<Double> invalidAmounts() {
+        return Stream.of(-1.0, -100.5, 0.0);
     }
 
     @ParameterizedTest
-    @MethodSource("putMoneyInvalidArguments")
-    void putMoney_ShouldThrowException_WhenInvalidCurrencyOrAmount() {
-        CollectionBox box = new CollectionBox();
-        when(collectionBoxRepository.findById(any())).thenReturn(java.util.Optional.of(box));
+    @MethodSource("invalidAmounts")
+    void putMoney_ShouldThrowInvalidAmountException(double amount) {
+        CollectionBox box = CollectionBoxFactory.createCollectionBox();
+        when(collectionBoxRepository.findById(any()))
+                .thenReturn(Optional.of(box));
 
-        assertThrows(ArgumentsException.class, () -> {
-            collectionBoxService.putMoney(box.getUuid(), "INVALID", -100.0);
+        assertThrows(InvalidAmountException.class, () -> {
+            collectionBoxService.putMoney(box.getUuid(), CORRECT_CURRENCY, amount);
+        });
+    }
+
+    private static Stream<String> invalidCurrencies() {
+        return Stream.of("ERR", null, "");
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidCurrencies")
+    void putMoney_ShouldThrowInvalidCurrencyException(String currency) {
+        CollectionBox box = CollectionBoxFactory.createCollectionBox();
+        when(collectionBoxRepository.findById(any()))
+                .thenReturn(Optional.of(box));
+
+        assertThrows(InvalidCurrencyException.class, () -> {
+            collectionBoxService.putMoney(box.getUuid(), currency, CORRECT_AMOUNT);
         });
     }
 
     @Test
-    void unregisterBox_ShouldDeleteBox() throws CollectionBoxDoesntExistException {
-        CollectionBox box = new CollectionBox();
-        when(collectionBoxRepository.existsById(any())).thenReturn(true);
+    void unregisterBox_ShouldDeleteBox() throws CollectionBoxException {
+        CollectionBox box = CollectionBoxFactory.createCollectionBox();
+        when(collectionBoxRepository.findById(box.getUuid()))
+                .thenReturn(Optional.of(box));
 
         collectionBoxService.unregisterBox(box.getUuid());
 
-        assertThrows(CollectionBoxDoesntExistException.class, () -> {
-            collectionBoxService.putMoney(box.getUuid(), "PLN", 100.0);
-        });
+        verify(collectionBoxRepository).delete(box);
     }
 
     @Test
     void unregisterBox_ShouldThrowException_WhenBoxDoesntExist() {
-        CollectionBox box = new CollectionBox();
-        when(collectionBoxRepository.findById(any())).thenReturn(java.util.Optional.empty());
+        CollectionBox box = CollectionBoxFactory.createCollectionBox();
+        when(collectionBoxRepository.findById(any())).thenReturn(Optional.empty());
 
         assertThrows(CollectionBoxDoesntExistException.class, () -> {
             collectionBoxService.unregisterBox(box.getUuid());
@@ -123,9 +144,9 @@ class CollectionBoxServiceTests {
     }
 
     @Test
-    void emptyBox_ShouldReturnUpdatedCollectionBox() throws CollectionBoxDoesntExistException {
-        CollectionBox box = new CollectionBox();
-        when(collectionBoxRepository.findById(any())).thenReturn(java.util.Optional.of(box));
+    void emptyBox_ShouldReturnUpdatedCollectionBox() throws CollectionBoxException {
+        CollectionBox box = CollectionBoxFactory.createCollectionBox();
+        when(collectionBoxRepository.findById(any())).thenReturn(Optional.of(box));
         when(collectionBoxRepository.save(any(CollectionBox.class))).thenReturn(box);
 
         CollectionBox result = collectionBoxService.emptyBox(box.getUuid());
@@ -136,8 +157,8 @@ class CollectionBoxServiceTests {
 
     @Test
     void emptyBox_ShouldThrowException_WhenBoxDoesntExist() {
-        CollectionBox box = new CollectionBox();
-        when(collectionBoxRepository.findById(any())).thenReturn(java.util.Optional.empty());
+        CollectionBox box = CollectionBoxFactory.createCollectionBox();
+        when(collectionBoxRepository.findById(any())).thenReturn(Optional.empty());
 
         assertThrows(CollectionBoxDoesntExistException.class, () -> {
             collectionBoxService.emptyBox(box.getUuid());
