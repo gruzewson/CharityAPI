@@ -1,7 +1,7 @@
 package app.services;
 
-import app.exceptions.CollectionBoxDoesntExistException;
-import app.exceptions.InvalidCurrencyOrAmountException;
+import app.exceptions.arguments.ArgumentsException;
+import app.exceptions.collection_box.CollectionBoxDoesntExistException;
 import app.factories.CollectionBoxFactory;
 import app.models.CollectionBox;
 import app.repositories.CollectionBoxRepository;
@@ -28,7 +28,7 @@ public class CollectionBoxService {
     }
 
     @Transactional
-    public CollectionBox putMoney(UUID id, String currency, double amount) throws InvalidCurrencyOrAmountException, CollectionBoxDoesntExistException {
+    public CollectionBox putMoney(UUID id, String currency, double amount) throws CollectionBoxDoesntExistException, ArgumentsException {
         CollectionBox box = repo.findById(id)
                 .orElseThrow(() -> new CollectionBoxDoesntExistException());
         box.putMoney(currency, amount);

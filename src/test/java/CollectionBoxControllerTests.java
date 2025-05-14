@@ -1,6 +1,6 @@
 import app.controllers.CollectionBoxController;
-import app.exceptions.CollectionBoxDoesntExistException;
-import app.exceptions.InvalidCurrencyOrAmountException;
+import app.exceptions.arguments.ArgumentsException;
+import app.exceptions.collection_box.CollectionBoxDoesntExistException;
 import app.models.CollectionBox;
 import app.services.CollectionBoxService;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +12,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -79,7 +78,7 @@ class CollectionBoxControllerTests {
     }
 
     @Test
-    void putMoney_ShouldReturnUpdatedBox() throws InvalidCurrencyOrAmountException, CollectionBoxDoesntExistException {
+    void putMoney_ShouldReturnUpdatedBox() throws CollectionBoxDoesntExistException, ArgumentsException {
         UUID boxId = sampleBox.getUuid();
         String currency = "PLN";
         double amount = 100.0;
@@ -93,7 +92,7 @@ class CollectionBoxControllerTests {
     }
 
     @Test
-    void putMoney_BoxDoesntExist_ShouldThrowException() throws InvalidCurrencyOrAmountException, CollectionBoxDoesntExistException {
+    void putMoney_BoxDoesntExist_ShouldThrowException() throws CollectionBoxDoesntExistException, ArgumentsException {
         UUID boxId = UUID.randomUUID();
         String currency = "PLN";
         double amount = 100.0;
@@ -117,12 +116,12 @@ class CollectionBoxControllerTests {
 
     @ParameterizedTest
     @MethodSource("putMoneyInvalidArguments")
-    void putMoney_ShouldThrowException_WhenInvalidCurrencyOrAmount(String currency, double amount) throws InvalidCurrencyOrAmountException, CollectionBoxDoesntExistException {
+    void putMoney_ShouldThrowException_WhenInvalidCurrencyOrAmount(String currency, double amount) throws CollectionBoxDoesntExistException, ArgumentsException {
         UUID boxId = sampleBox.getUuid();
 
-        doThrow(InvalidCurrencyOrAmountException.class).when(service).putMoney(boxId, currency, amount);
+        doThrow(ArgumentsException.class).when(service).putMoney(boxId, currency, amount);
 
-        assertThrows(InvalidCurrencyOrAmountException.class, () -> controller.putMoney(boxId, currency, amount));
+        assertThrows(ArgumentsException.class, () -> controller.putMoney(boxId, currency, amount));
 
         verify(service).putMoney(boxId, currency, amount);
     }

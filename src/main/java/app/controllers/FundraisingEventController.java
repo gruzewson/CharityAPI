@@ -1,6 +1,14 @@
 package app.controllers;
 
-import app.exceptions.*;
+import app.exceptions.arguments.ArgumentsException;
+import app.exceptions.collection_box.CollectionBoxAlreadyAssignedException;
+import app.exceptions.collection_box.CollectionBoxDoesntExistException;
+import app.exceptions.collection_box.CollectionBoxException;
+import app.exceptions.collection_box.InvalidCollectionBoxException;
+import app.exceptions.fundraising_event.FundraisingEventDoesntExistException;
+import app.exceptions.fundraising_event.FundraisingEventException;
+import app.exceptions.fundraising_event.InvalidEventAssignmentException;
+import app.exceptions.fundraising_event.InvalidFundraisingEventException;
 import app.models.FinancialReportProjection;
 import app.models.FundraisingEvent;
 import app.services.FundraisingEventService;
@@ -46,22 +54,21 @@ public class FundraisingEventController {
     public void assignCollectionBoxToFundraisingEvent(
             @PathVariable("eventId") UUID eventId,
             @PathVariable("boxId") UUID boxId)
-            throws FundraisingEventDoesntExistException, CollectionBoxDoesntExistException,
-            InvalidCollectionBoxException, InvalidEventAssignmentException, InvalidFundraisingEventUUIDException, CollectionBoxAlreadyAssignedException {
+            throws FundraisingEventException, CollectionBoxException {
         service.assignCollectionBoxToFundraisingEvent(eventId, boxId);
     }
 
     @DeleteMapping("/{eventId}/unregister")
     public void unregisterCollectionBoxFromFundraisingEvent(
             @PathVariable("eventId") UUID eventId)
-            throws FundraisingEventDoesntExistException, InvalidCollectionBoxException, InvalidFundraisingEventUUIDException {
+            throws FundraisingEventException, InvalidCollectionBoxException {
         service.unregisterCollectionBoxFromFundraisingEvent(eventId);
     }
 
     @PostMapping("/{eventId}/transfer")
     public void transferMoney(
             @PathVariable("eventId") UUID eventId)
-            throws FundraisingEventDoesntExistException, InvalidCurrencyOrAmountException, CollectionBoxDoesntExistException {
+            throws FundraisingEventDoesntExistException, ArgumentsException, CollectionBoxDoesntExistException {
         service.transferMoney(eventId);
     }
 }

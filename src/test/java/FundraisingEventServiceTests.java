@@ -1,4 +1,11 @@
-import app.exceptions.*;
+import app.exceptions.arguments.ArgumentsException;
+import app.exceptions.collection_box.CollectionBoxAlreadyAssignedException;
+import app.exceptions.collection_box.CollectionBoxDoesntExistException;
+import app.exceptions.collection_box.CollectionBoxException;
+import app.exceptions.collection_box.InvalidCollectionBoxException;
+import app.exceptions.fundraising_event.FundraisingEventDoesntExistException;
+import app.exceptions.fundraising_event.FundraisingEventException;
+import app.exceptions.fundraising_event.InvalidEventAssignmentException;
 import app.factories.CollectionBoxFactory;
 import app.factories.FundraisingEventFactory;
 import app.models.CollectionBox;
@@ -6,7 +13,6 @@ import app.models.FinancialReportProjection;
 import app.models.FundraisingEvent;
 import app.repositories.CollectionBoxRepository;
 import app.repositories.FundraisingEventRepository;
-import app.services.CollectionBoxService;
 import app.services.FundraisingEventService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -131,9 +137,7 @@ public class FundraisingEventServiceTests {
 
     @Test
     public void assignCollectionBoxToFundraisingEvent_ShouldAssignBoxToEvent()
-            throws FundraisingEventDoesntExistException, InvalidCollectionBoxException,
-            InvalidEventAssignmentException, InvalidFundraisingEventUUIDException,
-            CollectionBoxAlreadyAssignedException, CollectionBoxDoesntExistException {
+            throws FundraisingEventException, CollectionBoxException {
         FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent();
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
         when(eventRepository.findById(event.getUuid())).thenReturn(java.util.Optional.of(event));
@@ -171,8 +175,7 @@ public class FundraisingEventServiceTests {
 
     @Test
     public void unregisterCollectionBoxFromFundraisingEvent_ShouldUnassignBoxFromEvent()
-            throws FundraisingEventDoesntExistException, InvalidCollectionBoxException,
-            InvalidFundraisingEventUUIDException, InvalidEventAssignmentException, CollectionBoxAlreadyAssignedException {
+            throws FundraisingEventException, CollectionBoxException {
         FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent();
         event.assignCollectionBox(CollectionBoxFactory.createCollectionBox());
         when(eventRepository.findById(event.getUuid())).thenReturn(java.util.Optional.of(event));
@@ -195,7 +198,7 @@ public class FundraisingEventServiceTests {
 
     @Test
     public void getCollectionBoxByFundraisingEventId_ShouldReturnCollectionBox()
-            throws FundraisingEventDoesntExistException, InvalidCollectionBoxException, InvalidEventAssignmentException, InvalidFundraisingEventUUIDException, CollectionBoxAlreadyAssignedException {
+            throws FundraisingEventException, CollectionBoxException {
         FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent();
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
         event.assignCollectionBox(box);
@@ -240,7 +243,7 @@ public class FundraisingEventServiceTests {
     }
 
     @Test
-    public void transferMoney_ShouldTransfer() throws InvalidCollectionBoxException, InvalidEventAssignmentException, InvalidFundraisingEventUUIDException, CollectionBoxAlreadyAssignedException, InvalidCurrencyOrAmountException, CollectionBoxDoesntExistException, FundraisingEventDoesntExistException {
+    public void transferMoney_ShouldTransfer() throws CollectionBoxException, FundraisingEventException, ArgumentsException {
         FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent("Test Event", "PLN");
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
         event.assignCollectionBox(box);

@@ -1,5 +1,5 @@
-import app.exceptions.CollectionBoxDoesntExistException;
-import app.exceptions.InvalidCurrencyOrAmountException;
+import app.exceptions.arguments.ArgumentsException;
+import app.exceptions.collection_box.CollectionBoxDoesntExistException;
 import app.models.CollectionBox;
 import app.repositories.CollectionBoxRepository;
 import app.services.CollectionBoxService;
@@ -56,7 +56,7 @@ class CollectionBoxServiceTests {
     }
 
     @Test
-    void putMoney_ShouldReturnUpdatedCollectionBox() throws CollectionBoxDoesntExistException, InvalidCurrencyOrAmountException {
+    void putMoney_ShouldReturnUpdatedCollectionBox() throws CollectionBoxDoesntExistException, ArgumentsException {
         CollectionBox box = new CollectionBox();
         when(collectionBoxRepository.findById(any())).thenReturn(java.util.Optional.of(box));
         when(collectionBoxRepository.save(any(CollectionBox.class))).thenReturn(box);
@@ -93,7 +93,7 @@ class CollectionBoxServiceTests {
         CollectionBox box = new CollectionBox();
         when(collectionBoxRepository.findById(any())).thenReturn(java.util.Optional.of(box));
 
-        assertThrows(InvalidCurrencyOrAmountException.class, () -> {
+        assertThrows(ArgumentsException.class, () -> {
             collectionBoxService.putMoney(box.getUuid(), "INVALID", -100.0);
         });
     }

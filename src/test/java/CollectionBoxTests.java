@@ -1,6 +1,6 @@
-import app.exceptions.InvalidCurrencyOrAmountException;
-import app.exceptions.InvalidEventAssignmentException;
-import app.exceptions.InvalidFundraisingEventUUIDException;
+import app.exceptions.arguments.*;
+import app.exceptions.collection_box.*;
+import app.exceptions.fundraising_event.*;
 import app.factories.CollectionBoxFactory;
 import app.factories.FundraisingEventFactory;
 import app.models.CollectionBox;
@@ -11,7 +11,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,46 +20,56 @@ public class CollectionBoxTests {
     private static final double CORRECT_AMOUNT = 100.0;
 
     @Test
-    public void putMoneyValidData_ShouldPut() throws InvalidCurrencyOrAmountException {
+    public void putMoneyValidData_ShouldPut() throws ArgumentsException {
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
         box.putMoney(CORRECT_CURRENCY, CORRECT_AMOUNT);
         assertEquals(CORRECT_AMOUNT, box.getMoneyByCurrency(CORRECT_CURRENCY));
     }
 
-    private static Stream<Arguments> putMoneyInvalidArguments() {
-        return Stream.of(
-                Arguments.of(CORRECT_CURRENCY, -1.0),
-                Arguments.of("ERR", CORRECT_AMOUNT),
-                Arguments.of(null, CORRECT_AMOUNT)
-        );
+    static Stream<Double> invalidAmountArguments() {
+        return Stream.of(-1.0, -100.5);
     }
 
     @ParameterizedTest
-    @MethodSource("putMoneyInvalidArguments")
-    public void putMoneyInvalidData_ShouldThrowException(String currency, double amount) {
+    @MethodSource("invalidAmountArguments")
+    public void putMoney_NegativeAmount_ShouldThrowInvalidAmount(Double amount) {
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
-        assertThrows(InvalidCurrencyOrAmountException.class, () -> box.putMoney(currency, amount));
+        assertThrows(InvalidAmountException.class,
+                () -> box.putMoney(CORRECT_CURRENCY, amount));
+    }
+
+    static Stream<String> invalidCurrencyArguments() {
+        return Stream.of(null, "UNKNOWN");
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidCurrencyArguments")
+    public void putMoney_InvalidCurrency_ShouldThrowInvalidCurrency(String currency) {
+        CollectionBox box = CollectionBoxFactory.createCollectionBox();
+        assertThrows(InvalidCurrencyException.class,
+                () -> box.putMoney(currency, CORRECT_AMOUNT));
     }
 
     @Test
-    public void getMoneyByCurrency_ShouldReturnCorrectAmount() throws InvalidCurrencyOrAmountException {
+    public void getMoneyByCurrency_ShouldReturnCorrectAmount() throws ArgumentsException {
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
         box.putMoney(CORRECT_CURRENCY, CORRECT_AMOUNT);
         assertEquals(CORRECT_AMOUNT, box.getMoneyByCurrency(CORRECT_CURRENCY));
     }
 
-    private static Object[][] getMoneyByCurrencyInvalidArguments() {
-        return new Object[][]{
-                {"ERR"},
-                {null}
-        };
+    private static Stream<Arguments> getMoneyByCurrencyInvalidArguments() {
+        return Stream.of(
+                Arguments.of("ERR"),
+                Arguments.of((String) null)
+        );
     }
+
 
     @ParameterizedTest
     @MethodSource("getMoneyByCurrencyInvalidArguments")
     public void getMoneyByCurrencyInvalidData_ShouldThrowException(String currency) {
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
-        assertThrows(InvalidCurrencyOrAmountException.class, () -> box.getMoneyByCurrency(currency));
+        assertThrows(InvalidCurrencyException.class, () -> box.getMoneyByCurrency(currency));
     }
 
     @Test
@@ -70,7 +79,7 @@ public class CollectionBoxTests {
     }
 
     @Test
-    public void emptyBoxFully_ShouldSetAllAmountsToZero() throws InvalidCurrencyOrAmountException {
+    public void emptyBoxFully_ShouldSetAllAmountsToZero() throws ArgumentsException {
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
 
         for (Currencies currency : Currencies.values()) {
@@ -91,14 +100,14 @@ public class CollectionBoxTests {
     }
 
     @Test
-    public void isEmpty_ShouldReturnFalseWhenBoxIsNotEmpty() throws InvalidCurrencyOrAmountException {
+    public void isEmpty_ShouldReturnFalseWhenBoxIsNotEmpty() throws ArgumentsException {
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
         box.putMoney(CORRECT_CURRENCY, CORRECT_AMOUNT);
         assertFalse(box.isEmpty());
     }
 
     @Test
-    public void assignFundraisingEvent_ShouldAssignCorrectEvent() throws InvalidFundraisingEventUUIDException, InvalidEventAssignmentException {
+    public void assignFundraisingEvent_ShouldAssignCorrectEvent() throws FundraisingEventException, CollectionBoxException {
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
         FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent();
         box.assignFundraisingEvent(event);
@@ -106,16 +115,16 @@ public class CollectionBoxTests {
     }
 
     @Test
-    public void assignFundraisingEvent_ShouldNotAssignWhenBoxIsNotEmpty() throws InvalidCurrencyOrAmountException {
+    public void assignFundraisingEvent_ShouldNotAssignWhenBoxIsNotEmpty() throws ArgumentsException {
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
         FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent();
         box.putMoney(CORRECT_CURRENCY, CORRECT_AMOUNT);
-        assertThrows(InvalidEventAssignmentException.class, () -> box.assignFundraisingEvent(event));
+        assertThrows(InvalidCollectionBoxException.class, () -> box.assignFundraisingEvent(event));
     }
 
     @Test
     public void assignFundraisingEvent_ShouldNotAssignWhenAlreadyAssigned()
-            throws InvalidFundraisingEventUUIDException, InvalidEventAssignmentException {
+            throws FundraisingEventException, CollectionBoxException {
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
         FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent();
         box.assignFundraisingEvent(event);
@@ -125,11 +134,11 @@ public class CollectionBoxTests {
     @Test
     public void assignFundraisingEvent_ShouldNotAssignWhenEventIsNull(){
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
-        assertThrows(InvalidFundraisingEventUUIDException.class, () -> box.assignFundraisingEvent(null));
+        assertThrows(InvalidFundraisingEventException.class, () -> box.assignFundraisingEvent(null));
     }
 
     @Test
-    public void isAssigned_ShouldReturnTrueWhenAssigned() throws InvalidFundraisingEventUUIDException, InvalidEventAssignmentException {
+    public void isAssigned_ShouldReturnTrueWhenAssigned() throws FundraisingEventException, CollectionBoxException {
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
         FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent();
         box.assignFundraisingEvent(event);
@@ -143,7 +152,7 @@ public class CollectionBoxTests {
     }
 
     @Test
-    public void unregisterFundraisingEvent_ShouldUnassign() throws InvalidFundraisingEventUUIDException, InvalidEventAssignmentException {
+    public void unregisterFundraisingEvent_ShouldUnassign() throws FundraisingEventException, CollectionBoxException {
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
         FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent();
         box.assignFundraisingEvent(event);
@@ -154,6 +163,6 @@ public class CollectionBoxTests {
     @Test
     public void unregisterFundraisingEvent_ShouldThrowExceptionWhenNotAssigned() {
         CollectionBox box = CollectionBoxFactory.createCollectionBox();
-        assertThrows(InvalidFundraisingEventUUIDException.class, () -> box.unregisterFundraisingEvent());
+        assertThrows(InvalidFundraisingEventException.class, () -> box.unregisterFundraisingEvent());
     }
 }

@@ -1,7 +1,7 @@
 package app.controllers;
 
-import app.exceptions.CollectionBoxDoesntExistException;
-import app.exceptions.InvalidCurrencyOrAmountException;
+import app.exceptions.arguments.ArgumentsException;
+import app.exceptions.collection_box.CollectionBoxDoesntExistException;
 import app.models.CollectionBox;
 import app.services.CollectionBoxService;
 import org.springframework.web.bind.annotation.*;
@@ -39,7 +39,7 @@ public class CollectionBoxController {
             @PathVariable("id") UUID id,
             @RequestParam("currency") String currency,
             @RequestParam("amount") double amount)
-            throws CollectionBoxDoesntExistException, InvalidCurrencyOrAmountException {
+            throws CollectionBoxDoesntExistException, ArgumentsException {
         return service.putMoney(id, currency, amount);
     }
 

@@ -1,6 +1,13 @@
 package app.models;
 
-import app.exceptions.*;
+import app.exceptions.arguments.ArgumentsException;
+import app.exceptions.collection_box.CollectionBoxAlreadyAssignedException;
+import app.exceptions.collection_box.CollectionBoxDoesntExistException;
+import app.exceptions.collection_box.CollectionBoxException;
+import app.exceptions.collection_box.InvalidCollectionBoxException;
+import app.exceptions.fundraising_event.FundraisingEventException;
+import app.exceptions.fundraising_event.InvalidEventAssignmentException;
+import app.exceptions.fundraising_event.InvalidFundraisingEventException;
 import app.services.CurrencyConverter;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -55,7 +62,7 @@ public class FundraisingEvent {
     }
 
     public void assignCollectionBox(CollectionBox collectionBox)
-            throws InvalidEventAssignmentException, InvalidCollectionBoxException, InvalidFundraisingEventUUIDException, CollectionBoxAlreadyAssignedException {
+            throws FundraisingEventException, CollectionBoxException {
         if (collectionBox == null) {
             throw new InvalidCollectionBoxException("Collection box cannot be null");
         }
@@ -68,7 +75,7 @@ public class FundraisingEvent {
         this.collectionBox.assignFundraisingEvent(this);
     }
 
-    public void unregisterCollectionBox() throws InvalidCollectionBoxException, InvalidFundraisingEventUUIDException {
+    public void unregisterCollectionBox() throws InvalidCollectionBoxException, FundraisingEventException {
         if (this.collectionBox == null) {
             throw new InvalidCollectionBoxException("Collection box is not assigned to this event");
         }
@@ -78,7 +85,7 @@ public class FundraisingEvent {
     }
 
     public void transferMoney()
-            throws InvalidCurrencyOrAmountException, CollectionBoxDoesntExistException {
+            throws ArgumentsException, CollectionBoxDoesntExistException {
         if(this.collectionBox == null) {
             throw new CollectionBoxDoesntExistException();
         }

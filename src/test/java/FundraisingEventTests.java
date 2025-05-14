@@ -1,4 +1,10 @@
-import app.exceptions.*;
+import app.exceptions.arguments.ArgumentsException;
+import app.exceptions.collection_box.CollectionBoxAlreadyAssignedException;
+import app.exceptions.collection_box.CollectionBoxDoesntExistException;
+import app.exceptions.collection_box.CollectionBoxException;
+import app.exceptions.collection_box.InvalidCollectionBoxException;
+import app.exceptions.fundraising_event.FundraisingEventException;
+import app.exceptions.fundraising_event.InvalidEventAssignmentException;
 import app.factories.CollectionBoxFactory;
 import app.factories.FundraisingEventFactory;
 import app.models.CollectionBox;
@@ -10,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class FundraisingEventTests {
     @Test
     public void assignCollectionBox_ShouldAssign()
-            throws InvalidCollectionBoxException, InvalidEventAssignmentException, InvalidFundraisingEventUUIDException, CollectionBoxAlreadyAssignedException {
+            throws CollectionBoxException, FundraisingEventException   {
         FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent();
         CollectionBox collectionBox = CollectionBoxFactory.createCollectionBox();
         event.assignCollectionBox(collectionBox);
@@ -21,7 +27,7 @@ public class FundraisingEventTests {
 
     @Test
     public void assignCollectionBox_ShouldThrowException_WhenEventAlreadyHasCollectionBox()
-            throws InvalidCollectionBoxException, InvalidEventAssignmentException, InvalidFundraisingEventUUIDException, CollectionBoxAlreadyAssignedException {
+            throws CollectionBoxException, FundraisingEventException   {
         FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent();
         CollectionBox collectionBox1 = CollectionBoxFactory.createCollectionBox();
         CollectionBox collectionBox2 = CollectionBoxFactory.createCollectionBox();
@@ -35,7 +41,7 @@ public class FundraisingEventTests {
 
     @Test
     public void assignCollectionBox_ShouldThrowException_WhenCollectionBoxIsNull()
-            throws InvalidEventAssignmentException, InvalidFundraisingEventUUIDException, CollectionBoxAlreadyAssignedException {
+            throws InvalidEventAssignmentException,  CollectionBoxAlreadyAssignedException {
         FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent();
 
         assertThrows(InvalidCollectionBoxException.class, () -> {
@@ -45,7 +51,7 @@ public class FundraisingEventTests {
 
     @Test
     public void assignCollectionBox_ShouldThrowException_WhenCollectionBoxIsAlreadyAssigned()
-            throws InvalidEventAssignmentException, InvalidFundraisingEventUUIDException, CollectionBoxAlreadyAssignedException, InvalidCollectionBoxException {
+            throws FundraisingEventException, CollectionBoxException {
         FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent();
         FundraisingEvent event2 = FundraisingEventFactory.createFundraisingEvent();
         CollectionBox collectionBox = CollectionBoxFactory.createCollectionBox();
@@ -58,7 +64,7 @@ public class FundraisingEventTests {
 
     @Test
     public void unregisterCollectionBox_ShouldUnassign()
-            throws InvalidCollectionBoxException, InvalidEventAssignmentException, InvalidFundraisingEventUUIDException, CollectionBoxAlreadyAssignedException {
+            throws CollectionBoxException, FundraisingEventException  {
         FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent();
         CollectionBox collectionBox = CollectionBoxFactory.createCollectionBox();
         event.assignCollectionBox(collectionBox);
@@ -70,7 +76,7 @@ public class FundraisingEventTests {
 
     @Test
     public void unregisterCollectionBox_ShouldThrowException_WhenNoCollectionBoxAssigned()
-            throws InvalidEventAssignmentException, InvalidFundraisingEventUUIDException, CollectionBoxAlreadyAssignedException {
+            throws InvalidEventAssignmentException, CollectionBoxAlreadyAssignedException {
         FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent();
 
         assertThrows(InvalidCollectionBoxException.class, () -> {
@@ -80,7 +86,7 @@ public class FundraisingEventTests {
 
     @Test
     public void transferMoney_ShouldTransferMoney()
-            throws InvalidEventAssignmentException, InvalidFundraisingEventUUIDException, InvalidCollectionBoxException, CollectionBoxAlreadyAssignedException, InvalidCurrencyOrAmountException, CollectionBoxDoesntExistException {
+            throws FundraisingEventException, CollectionBoxException, ArgumentsException {
         FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent("Test Event", "PLN");
         CollectionBox collectionBox = CollectionBoxFactory.createCollectionBox();
         event.assignCollectionBox(collectionBox);
@@ -103,7 +109,7 @@ public class FundraisingEventTests {
 
     @Test
     public void transferMoney_ShouldNotTransferMoney_WhenCollectionBoxIsEmpty()
-            throws InvalidEventAssignmentException, InvalidFundraisingEventUUIDException, InvalidCollectionBoxException, CollectionBoxAlreadyAssignedException, InvalidCurrencyOrAmountException, CollectionBoxDoesntExistException {
+            throws FundraisingEventException, CollectionBoxException, ArgumentsException {
         FundraisingEvent event = FundraisingEventFactory.createFundraisingEvent("Test Event", "PLN");
         CollectionBox collectionBox = CollectionBoxFactory.createCollectionBox();
         event.assignCollectionBox(collectionBox);

@@ -1,13 +1,17 @@
 package app.models;
 
-import app.exceptions.InvalidCurrencyOrAmountException;
-import app.exceptions.InvalidEventAssignmentException;
-import app.exceptions.InvalidFundraisingEventUUIDException;
-
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.UUID;
 
+import app.exceptions.arguments.ArgumentsException;
+import app.exceptions.arguments.InvalidAmountException;
+import app.exceptions.arguments.InvalidCurrencyException;
+import app.exceptions.collection_box.CollectionBoxException;
+import app.exceptions.collection_box.InvalidCollectionBoxException;
+import app.exceptions.fundraising_event.FundraisingEventException;
+import app.exceptions.fundraising_event.InvalidEventAssignmentException;
+import app.exceptions.fundraising_event.InvalidFundraisingEventException;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
@@ -15,7 +19,6 @@ import jakarta.persistence.*;
 @Table(name = "collection_boxes")
 public class CollectionBox {
     @Id
-    @GeneratedValue
     private UUID uuid;
 
     @OneToOne(mappedBy = "collectionBox")
@@ -38,19 +41,19 @@ public class CollectionBox {
         }
     }
 
-    public void putMoney(String currency, double amount) throws InvalidCurrencyOrAmountException {
-        if (amount < 0 || currency == null) {
-            throw new InvalidCurrencyOrAmountException("Invalid amount");
+    public void putMoney(String currency, double amount) throws ArgumentsException {
+        if (amount < 0) {
+            throw new InvalidAmountException(amount);
         }
-        if (!money.containsKey(currency)) {
-            throw new InvalidCurrencyOrAmountException("Invalid currency");
+        if (currency == null || !money.containsKey(currency)) {
+            throw new InvalidCurrencyException(currency);
         }
         money.put(currency, amount);
     }
 
-    public Double getMoneyByCurrency(String currency) throws InvalidCurrencyOrAmountException {
+    public Double getMoneyByCurrency(String currency) throws ArgumentsException {
         if (currency == null || !money.containsKey(currency)) {
-            throw new InvalidCurrencyOrAmountException("Invalid currency");
+            throw new InvalidCurrencyException(currency);
         }
         return money.get(currency);
     }
@@ -74,23 +77,24 @@ public class CollectionBox {
         return true;
     }
 
-    public void assignFundraisingEvent(FundraisingEvent newFundraisingEvent) throws InvalidFundraisingEventUUIDException, InvalidEventAssignmentException {
+    public void assignFundraisingEvent(FundraisingEvent newFundraisingEvent)
+            throws FundraisingEventException, CollectionBoxException {
         if (newFundraisingEvent == null) {
-            throw new InvalidFundraisingEventUUIDException("Fundraising event cannot be null");
+            throw new InvalidFundraisingEventException("Fundraising event cannot be null");
         }
         if (this.fundraisingEvent != null) {
             throw new InvalidEventAssignmentException("Fundraising event is already assigned");
         }
         if(!this.isEmpty())
         {
-            throw new InvalidEventAssignmentException("Collection box is not empty");
+            throw new InvalidCollectionBoxException("Collection box is not empty");
         }
         this.fundraisingEvent = newFundraisingEvent;
     }
 
-    public void unregisterFundraisingEvent() throws InvalidFundraisingEventUUIDException {
+    public void unregisterFundraisingEvent() throws FundraisingEventException {
         if (this.fundraisingEvent == null) {
-            throw new InvalidFundraisingEventUUIDException("Fundraising event is not assigned");
+            throw new InvalidFundraisingEventException("Fundraising event is not assigned");
         }
         this.fundraisingEvent = null;
     }
